@@ -11,16 +11,16 @@
 			padding: 0;
 			margin: 0;
 		}
-		#map {
+		.map {
 			left: 0;
 			height: 100%;
 			width: 80%;
 			position: fixed;
 		}
-		#map:hover {
+		.map:hover {
 			cursor: crosshair;
 		}
-		#panel {
+		.panel {
 			background-color: #131f23;
 			right: 0;
 			height: 100%;
@@ -33,23 +33,30 @@
 	</style>
 </head>
 <body>
-<div id="map"></div>
-<div id="panel">
+<div class="map" id="map"></div>
+<div class="panel">
 	<div style="padding: 20px; height: calc(100% - 60px); width: calc(100% - 40px);">
 		<h3 style="text-align: center; height: 35px; margin: 0; color: white; font-family: 'Exo 2', sans-serif;">Pin A Location</h3>
-		<textarea id="generated-text" style="width: 100%; height: calc(100% - 35px); resize: none; overflow:hidden; padding: 0; border: 0; border-radius: 5px;"></textarea>
-		<div style=" font-size: 20px; width: max-content; margin: auto; height: 20px; color: #fff; font-family: 'Exo 2', sans-serif;"><input style="margin: 3.5px 10px 3.5px 10px;" type="checkbox" checked onclick="if(this.checked){changeSet('rmOld', 1)}else{changeSet('rmOld', 0)}">Delete Prev</div>
+		<textarea class="generated-text" id="generated-text" style="width: 100%; height: calc(100% - 10px); resize: none; overflow:hidden; padding: 0; border: 0; border-radius: 5px;"></textarea>
+		<div style=" font-size: 20px; width: max-content; margin: auto; height: 20px; color: #fff; font-family: 'Exo 2', sans-serif;">
 	</div>
 </div>
 </body>
 <script type="text/javascript">
+	var markerIcon = L.icon({
+	    iconUrl: 'marker.png',
+	    iconSize: [36, 36],
+	    iconAnchor: [18, 18],
+	    popupAnchor: [0, 0]
+	});
+
 	var box = {"indexes":[],"list":[]};
 
 	var generalSettings = {"rmOld": 0};
 	function changeSet(key, value) {
 		generalSettings[key] = value
 	}
-	console.log(generalSettings)
+
 	var map = L.map('map').setView([39.21523130910493, 35.18051797397777], 6);
 
 	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -59,21 +66,13 @@
 		pin(e.latlng["lat"], e.latlng["lng"], map);
 		addList(e.latlng);
 		render();
-	})
+	});
+
 	function pin(inlat, inlong, inmap){
-		var mark = L.marker([inlat, inlong]).addTo(inmap);
+		var mark = L.marker([inlat, inlong], {icon: markerIcon}).addTo(inmap);
 		mark.bindTooltip(String(inlat)+String(inlong)).openTooltip();
 		mark.addEventListener("click", removeCoord);
-		if (generalSettings["rmOld"] == 1) {
-			setTimeout(function(){
-				mark.remove()
-			}, 5000);
-		}
 	}
-	function initList(){
-		document.getElementById("generated-text").value = "[]"
-	}
-	initList();
 
 	function addList(data) {
 		let coords = [];
