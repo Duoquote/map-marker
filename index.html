@@ -43,7 +43,9 @@
 </div>
 </body>
 <script type="text/javascript">
-	var generalSettings = {"rmOld": 1};
+	var box = {"indexes":[],"list":[]};
+
+	var generalSettings = {"rmOld": 0};
 	function changeSet(key, value) {
 		generalSettings[key] = value
 	}
@@ -54,13 +56,14 @@
 		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 	}).addTo(map);
 	map.on("click", function(e){
-		console.log(e.latlng);
 		pin(e.latlng["lat"], e.latlng["lng"], map);
-		addCord(e.latlng);
+		addList(e.latlng);
+		render();
 	})
 	function pin(inlat, inlong, inmap){
 		var mark = L.marker([inlat, inlong]).addTo(inmap);
 		mark.bindTooltip(String(inlat)+String(inlong)).openTooltip();
+		mark.addEventListener("click", removeCoord);
 		if (generalSettings["rmOld"] == 1) {
 			setTimeout(function(){
 				mark.remove()
@@ -71,14 +74,29 @@
 		document.getElementById("generated-text").value = "[]"
 	}
 	initList();
-	function addCord(inp){
-		var current = document.getElementById("generated-text").value;
-		if (current == "[]") {
-			current = "[["+String(inp["lat"])+", "+String(inp["lng"])+"]]"
-		} else {
-			current = current.slice(0, -1)+",["+String(inp["lat"])+", "+String(inp["lng"])+"]]"
-		}
-		document.getElementById("generated-text").value = current
+
+	function addList(data) {
+		let coords = [];
+		coords.push(data["lat"]);
+		coords.push(data["lng"]);
+		box["list"].push(coords);
+		box["indexes"].push(JSON.stringify(coords));
+		console.log(coords);
+	}
+
+	function removeCoord(data) {
+		let coords = [];
+		coords.push(data["latlng"]["lat"]);
+		coords.push(data["latlng"]["lng"]);
+		let index = box["indexes"].indexOf(JSON.stringify(coords));
+		box["list"].splice(index, 1);
+		box["indexes"].splice(index, 1);
+		data.sourceTarget.remove();
+		render();
+	}
+
+	function render() {
+		document.getElementById("generated-text").value = JSON.stringify(box["list"]);
 	}
 </script>
 </html>
